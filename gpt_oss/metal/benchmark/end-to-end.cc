@@ -52,27 +52,7 @@ static void end2end_decode(benchmark::State& state, const char* env_var_name) {
         state.SkipWithError("failed to prefill Context object");
         return;
     }
-    const std::size_t num_kvcache_tokens = context->num_kv_tokens;
-
     std::uint64_t rng_seed = 0;
-    for (std::uint32_t i = 0; i < 3; i++) {
-        const std::uint64_t current_rng_seed = rng_seed++;
-        context->num_kv_tokens = num_prompt_tokens;
-        context->num_tokens = num_prompt_tokens;
-
-        std::array<std::uint32_t, kNumGeneratedTokens> tokens;
-        std::size_t num_generated_tokens = 0;
-        do {
-            std::size_t num_current_generated_tokens = 0;
-            status = gptoss_context_sample(context.get(), /*temperature=*/1.0f, /*rng_state=*/current_rng_seed,
-                                           /*max_tokens=*/kNumGeneratedTokens - num_generated_tokens, tokens.data(), &num_current_generated_tokens);
-            if (status != gptoss_status_success) {
-                state.SkipWithError("failed to sample from the Context object");
-                return;
-            }
-            num_generated_tokens += num_current_generated_tokens;
-        } while (num_generated_tokens < kNumGeneratedTokens);
-    }
 
     for (auto _ : state) {
         const std::uint64_t current_rng_seed = rng_seed++;

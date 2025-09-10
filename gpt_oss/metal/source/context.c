@@ -193,7 +193,7 @@ static enum gptoss_status process_tokens(
         status = gptoss_metal_command_buffer_encode_launch_bf16_f32_embeddings(
             command_buffer,
             &model->bf16_f32_embeddings_fn,
-            /*threadgroup_size=*/512,
+            model->embeddings_threadgroup_size,
             &context->token_buffer,
             input_batch_start * sizeof(uint32_t),
             &model->shared_weight_buffer,
@@ -234,7 +234,7 @@ static enum gptoss_status process_tokens(
             status = gptoss_metal_command_buffer_encode_launch_f32_bf16w_matmul(
                 command_buffer,
                 &model->f32_bf16w_matmul_fn,
-                /*threadgroup_size=*/256,
+                model->attn_qkv_threadgroup_size,
                 &context->rmsnorm_activation_buffer,
                 /*input_offset=*/0,
                 &model->shared_weight_buffer,
@@ -318,7 +318,7 @@ static enum gptoss_status process_tokens(
                 status = gptoss_metal_command_buffer_encode_launch_f32_bf16w_matmul_add(
                     command_buffer,
                     &model->f32_bf16w_matmul_fn,
-                    /*threadgroup_size=*/256,
+                    model->attn_out_threadgroup_size,
                     &context->sdpa_activation_buffer,
                     /*input_offset=*/0,
                     &model->shared_weight_buffer,
@@ -359,7 +359,7 @@ static enum gptoss_status process_tokens(
                 status = gptoss_metal_command_buffer_encode_launch_f32_bf16w_matmul(
                     command_buffer,
                     &model->f32_bf16w_matmul_fn,
-                    /*threadgroup_size=*/256,
+                    model->mlp_gate_threadgroup_size,
                     &context->rmsnorm_activation_buffer,
                     /*input_offset=*/0,
                     &model->shared_weight_buffer,
@@ -417,7 +417,7 @@ static enum gptoss_status process_tokens(
                 status = gptoss_metal_command_buffer_encode_launch_f32_mf4w_moe_matmul_swiglu(
                     command_buffer,
                     &model->f32_mf4w_moe_matmul_swiglu_fn,
-                    /*threadgroup_size=*/512,
+                    model->mlp_swiglu_threadgroup_size,
                     &context->rmsnorm_activation_buffer,
                     /*input_offset=*/0,
                     &context->expert_activation_buffer,
@@ -446,7 +446,7 @@ static enum gptoss_status process_tokens(
                 status = gptoss_metal_command_buffer_encode_launch_f32_mf4w_moe_matmul(
                     command_buffer,
                     &model->f32_mf4w_moe_matmul_fn,
-                    /*threadgroup_size=*/512,
+                    model->mlp_out_threadgroup_size,
                     &context->swiglu_activation_buffer,
                     /*input_offset=*/0,
                     &context->expert_activation_buffer,
@@ -474,7 +474,7 @@ static enum gptoss_status process_tokens(
                 status = gptoss_metal_command_buffer_encode_launch_f32_accumulate(
                     command_buffer,
                     &model->f32_accumulate_e4_fn,
-                    /*threadgroup_size=*/256,
+                    model->mlp_acc_threadgroup_size,
                     model->max_threadgroups,
                     &context->moe_activation_buffer,
                     /*input_offset=*/0,
@@ -528,7 +528,7 @@ static enum gptoss_status process_tokens(
             status = gptoss_metal_command_buffer_encode_launch_f32_bf16w_unembedding(
                 command_buffer,
                 &model->f32_bf16w_unembedding_fn,
-                /*threadgroup_size=*/256,
+                model->unembedding_threadgroup_size,
                 model->max_threadgroups,
                 &context->rmsnorm_activation_buffer,
                 /*input_offset=*/0,

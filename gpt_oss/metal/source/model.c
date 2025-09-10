@@ -366,6 +366,16 @@ enum gptoss_status GPTOSS_ABI gptoss_model_create_from_file(
         goto cleanup;
     }
 
+    // Kernel launch parameters
+    model->embeddings_threadgroup_size = 512;
+    model->attn_qkv_threadgroup_size = 1024;
+    model->attn_out_threadgroup_size = 768;
+    model->mlp_gate_threadgroup_size = 256;
+    model->mlp_swiglu_threadgroup_size = 192;
+    model->mlp_out_threadgroup_size = 192;
+    model->mlp_acc_threadgroup_size = 768;
+    model->unembedding_threadgroup_size = 416;
+
     // Weight buffers
     const char* current_ptr = (const char*) model->mapping_ptr;
 

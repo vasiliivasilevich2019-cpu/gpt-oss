@@ -151,6 +151,10 @@ add_executable(end-to-end-bench benchmark/end-to-end.cc)
 target_link_libraries(end-to-end-bench PRIVATE benchmark::benchmark gptoss)
 target_include_directories(end-to-end-bench PRIVATE source/include)
 
+add_executable(end-to-end-threadgroup-bench benchmark/end-to-end-threadgroup.cc)
+target_link_libraries(end-to-end-threadgroup-bench PRIVATE benchmark::benchmark gptoss)
+target_include_directories(end-to-end-threadgroup-bench PRIVATE source/include)
+
 # --- [ Python extension ] -----------------------------------------------
 find_package(pybind11 CONFIG REQUIRED)          # provides pybind11_add_module
 
