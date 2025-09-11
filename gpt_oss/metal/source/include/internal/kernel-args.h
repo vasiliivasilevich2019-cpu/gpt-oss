@@ -39,6 +39,7 @@ struct gptoss_topk_args {
 struct gptoss_sdpa_args {
     uint32_t qkv_dim;
     uint32_t num_kv_tokens;
+    uint32_t kv_stride;
     uint32_t window;
 };
 
@@ -124,6 +125,18 @@ struct gptoss_rope_args {
     float yarn_offset;
     float yarn_scale;
     float yarn_multiplier;
+};
+
+struct gptoss_qkv_args {
+    uint32_t num_column_vecs;
+    uint32_t num_rows;
+    uint32_t token_offset;
+    float freq_scale;
+    float interpolation_scale;
+    float yarn_offset;
+    float yarn_scale;
+    float yarn_multiplier;
+    uint32_t max_tokens;
 };
 
 struct gptoss_softmax_args {

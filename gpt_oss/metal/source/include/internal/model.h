@@ -78,6 +78,7 @@ struct gptoss_model {
     struct gptoss_metal_function bf16_f32_embeddings_fn;
     struct gptoss_metal_function f32_bf16w_rmsnorm_fn;
     struct gptoss_metal_function f32_bf16w_matmul_fn;
+    struct gptoss_metal_function f32_bf16w_matmul_qkv_fn;
     struct gptoss_metal_function f32_bf16w_dense_matmul_qkv_fn;
     struct gptoss_metal_function f32_bf16w_dense_matmul_attn_output_fn;
     struct gptoss_metal_function f32_bf16w_dense_matmul_mlp_gate_fn;
