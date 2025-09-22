@@ -524,6 +524,8 @@ static enum gptoss_status process_tokens(
                     if (status != gptoss_status_success) {
                         return status;
                     }
+                    gptoss_metal_command_buffer_release(command_buffer);
+
                     const size_t E = model->num_experts;
                     const size_t T = num_block_output_tokens * model->num_active_experts;
 
