@@ -61,6 +61,8 @@ def call_python_script(script: str) -> str:
         # 4. Execute the script
         exec_result = container.exec_run(f"python /tmp/{script_name}")
         output = exec_result.output.decode("utf-8")
+        if not output.strip():
+            output = "[WARN] No output available. Use print() to output anything to stdout to receive the output"
     finally:
         container.remove(force=True)
     return output
