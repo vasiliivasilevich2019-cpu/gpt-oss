@@ -10,12 +10,9 @@ static int PyGPTOSSContext_init(PyGPTOSSContext* self, PyObject* args, PyObject*
     PyObject* model = NULL;
     Py_ssize_t context_length = 0; // Default to 0 if None
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|$i", kwlist,
-                                     &model, &context_length)) {
-        return -1;
-    }
-    if (!PyObject_TypeCheck(model, &PyGPTOSSModel_Type)) {
-        PyErr_SetString(PyExc_TypeError, "model must be an gptoss.Model object");
+    PyObject* model = NULL;
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|$i", kwlist,
+                                     &PyGPTOSSModel_Type, &model, &context_length)) {
         return -1;
     }
     if (context_length < 0) {
