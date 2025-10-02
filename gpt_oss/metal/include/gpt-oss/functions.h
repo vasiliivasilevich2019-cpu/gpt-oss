@@ -15,17 +15,13 @@ extern "C" {
  *
  * @param path Path to the file containing the model in GPT-OSS format.
  * @param model_out Pointer to the Model object that will be created. Must be released with gptoss_release_model.
- * @param max_batch_tokens Maximum number of tokens that can be processed in a single batch.
- *                        Larger values may improve prefill performance, but require more memory.
- *                        Specify 0 to use the default value.
  *
  * On success, returns gptoss_status_success and saves a pointer to the created Model in the model_out argument.
  * On failure, returns an error code and stores null pointer in the model_out argument.
  */
 enum gptoss_status GPTOSS_ABI gptoss_model_create_from_file(
     const char* path,
-    gptoss_model_t* model_out,
-    size_t max_batch_tokens);
+    gptoss_model_t* model_out);
 
 /*
  * Query the Tokenizer object associated with the Model.
@@ -172,8 +168,9 @@ enum gptoss_status GPTOSS_ABI gptoss_tokenizer_release(
  * @param model Model object to create a context for.
  * @param context_length Maximum number of tokens in the context.
  *                       Specify 0 to use the maximum context length supported by the model.
- * @param batch_size Maximum number of tokens that can be processed in a single batch.
- *                   Larger values may improve performance, but require more memory.
+ * @param max_batch_size Maximum number of tokens that can be processed in a single batch.
+ *                       Larger values may improve prefill performance, but require more memory.
+ *                       Specify 0 to use the default value.
  * @param context_out Pointer to the Context object that will be created.
  *                    Must be released with gptoss_release_context.
  *
@@ -183,6 +180,7 @@ enum gptoss_status GPTOSS_ABI gptoss_tokenizer_release(
 enum gptoss_status GPTOSS_ABI gptoss_context_create(
     gptoss_model_t model,
     size_t context_length,
+    size_t max_batch_tokens,
     gptoss_context_t* context_out);
 
 /*

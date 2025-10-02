@@ -79,8 +79,7 @@ static void prefetch_fd(int fd, size_t offset, size_t size, const char* path) {
 
 enum gptoss_status GPTOSS_ABI gptoss_model_create_from_file(
     const char* path,
-    gptoss_model_t* model_out,
-    size_t max_batch_tokens)
+    gptoss_model_t* model_out)
 {
     *model_out = NULL;
 
@@ -192,8 +191,6 @@ enum gptoss_status GPTOSS_ABI gptoss_model_create_from_file(
     model->yarn_scale = model_header.yarn_scale;
     model->yarn_multiplier = model_header.yarn_multiplier;
     model->rmsnorm_epsilon = model_header.rmsnorm_epsilon;
-
-    model->max_batch_tokens = max_batch_tokens == 0 ? GPTOSS_DEFAULT_BATCH_SIZE : max_batch_tokens;
 
     struct gptoss_uuid tokenizer_uuid;
     status = read_fd(fd, &tokenizer_uuid, sizeof(tokenizer_uuid), path);

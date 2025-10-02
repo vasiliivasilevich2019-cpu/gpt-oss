@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
     struct options options = parse_options(argc, argv);
 
     const uint64_t load_start_time = mach_continuous_time();
-    status = gptoss_model_create_from_file(options.model, &model, 0);
+    status = gptoss_model_create_from_file(options.model, &model);
     if (status != gptoss_status_success) {
         fprintf(stderr, "Error: failed to load model from file %s\n", options.model);
         goto error;
@@ -232,7 +232,7 @@ int main(int argc, char *argv[]) {
         goto error;
     }
 
-    status = gptoss_context_create(model, options.context_length, &context);
+    status = gptoss_context_create(model, options.context_length, /*max_batch_tokens=*/0, &context);
     if (status != gptoss_status_success) {
         fprintf(stderr, "Error: failed to create Context object\n");
         goto error;

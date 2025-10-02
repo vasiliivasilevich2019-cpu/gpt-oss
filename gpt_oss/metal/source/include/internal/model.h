@@ -61,10 +61,6 @@ struct gptoss_model {
 
     uint32_t vocabulary_size;
 
-    // Maximum number of tokens that can be processed in a single batch.
-    // Once the batch size is reached, we process it to fill the KV cache.
-    size_t max_batch_tokens;
-
     bool lock_memory;
 
     size_t weights_size;
@@ -148,6 +144,10 @@ struct gptoss_context {
     size_t num_kv_tokens;
     // Length of the context.
     size_t max_tokens;
+    // Maximum number of tokens that can be processed in a single batch.
+    // Activation buffers are allocated with this size.
+    size_t max_batch_tokens;
+
 
     size_t kvcache_size;
     size_t allocation_size;

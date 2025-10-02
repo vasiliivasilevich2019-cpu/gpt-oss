@@ -19,6 +19,7 @@
 enum gptoss_status GPTOSS_ABI gptoss_context_create(
     gptoss_model_t model,
     size_t context_length,
+    size_t max_batch_tokens,
     gptoss_context_t* context_out)
 {
     *context_out = NULL;
@@ -26,6 +27,7 @@ enum gptoss_status GPTOSS_ABI gptoss_context_create(
     enum gptoss_status status = gptoss_status_success;
     struct gptoss_context* context = NULL;
 
+    // Validate context_length
     if (context_length == 0) {
         context_length = model->context_length;
     } else if (context_length > model->context_length) {
@@ -34,6 +36,20 @@ enum gptoss_status GPTOSS_ABI gptoss_context_create(
         status = gptoss_status_invalid_argument;
         goto cleanup;
     }
+    assert(context_length != 0);
+    assert(context_length <= model->context_length);
+
+    // Validate max_batch_tokens
+    if (max_batch_tokens == 0) {
+        max_batch_tokens = GPTOSS_DEFAULT_BATCH_SIZE;
+    } else if (max_batch_tokens > context_length) {
+        GPTOSS_LOG_ERROR("requested max batch tokens %zu exceeds context length %zu",
+            max_batch_tokens, context_length);
+        status = gptoss_status_invalid_argument;
+        goto cleanup;
+    }
+    assert(max_batch_tokens != 0);
+    assert(max_batch_tokens <= context_length);
 
     context = malloc(sizeof(struct gptoss_context));
     if (context == NULL) {
@@ -46,29 +62,30 @@ enum gptoss_status GPTOSS_ABI gptoss_context_create(
 
     atomic_store_explicit(&context->ref_count, 1, memory_order_relaxed);
     context->max_tokens = context_length;
+    context->max_batch_tokens = max_batch_tokens;
 
     // Activation buffers
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->embedding_dim * sizeof(float), NULL, &context->residual_activation_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->embedding_dim * sizeof(float), NULL, &context->residual_activation_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->embedding_dim * sizeof(float), NULL, &context->rmsnorm_activation_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->embedding_dim * sizeof(float), NULL, &context->rmsnorm_activation_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->head_dim * (model->num_heads + 2 * model->num_kv_heads) * sizeof(float), NULL, &context->qkv_activation_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->head_dim * (model->num_heads + 2 * model->num_kv_heads) * sizeof(float), NULL, &context->qkv_activation_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->head_dim * model->num_heads * sizeof(float), NULL, &context->sdpa_activation_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->head_dim * model->num_heads * sizeof(float), NULL, &context->sdpa_activation_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->num_experts * sizeof(float), NULL, &context->gate_activation_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->num_experts * sizeof(float), NULL, &context->gate_activation_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->num_experts * sizeof(struct gptoss_expert_prediction), NULL, &context->expert_activation_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->num_experts * sizeof(struct gptoss_expert_prediction), NULL, &context->expert_activation_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
@@ -76,19 +93,19 @@ enum gptoss_status GPTOSS_ABI gptoss_context_create(
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->num_active_experts * sizeof(uint32_t), NULL, &context->token_to_expert_routing_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->num_active_experts * sizeof(uint32_t), NULL, &context->token_to_expert_routing_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->num_active_experts * model->embedding_dim * sizeof(float), NULL, &context->swiglu_input_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->num_active_experts * model->embedding_dim * sizeof(float), NULL, &context->swiglu_input_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->num_active_experts * model->mlp_dim * sizeof(float), NULL, &context->swiglu_activation_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->num_active_experts * model->mlp_dim * sizeof(float), NULL, &context->swiglu_activation_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->num_active_experts * model->embedding_dim * sizeof(float), NULL, &context->moe_activation_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->num_active_experts * model->embedding_dim * sizeof(float), NULL, &context->moe_activation_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
@@ -102,19 +119,19 @@ enum gptoss_status GPTOSS_ABI gptoss_context_create(
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->vocabulary_size * sizeof(float), NULL, &context->score_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->vocabulary_size * sizeof(float), NULL, &context->score_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->vocabulary_size * sizeof(float), NULL, &context->prob_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->vocabulary_size * sizeof(float), NULL, &context->prob_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * model->max_threadgroups * sizeof(float), NULL, &context->sum_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * model->max_threadgroups * sizeof(float), NULL, &context->sum_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
-    status = gptoss_metal_buffer_create(&model->device, model->max_batch_tokens * sizeof(uint64_t), NULL, &context->argmax_buffer);
+    status = gptoss_metal_buffer_create(&model->device, max_batch_tokens * sizeof(uint64_t), NULL, &context->argmax_buffer);
     if (status != gptoss_status_success) {
         goto cleanup;
     }
@@ -200,9 +217,9 @@ static enum gptoss_status process_tokens(
     const size_t input_tokens_end = input_tokens_offset + num_input_tokens;
     for (size_t input_batch_start = input_tokens_offset;
         input_batch_start < input_tokens_end;
-        input_batch_start += model->max_batch_tokens)
+        input_batch_start += context->max_batch_tokens)
     {
-        const size_t input_batch_size = math_min(model->max_batch_tokens, input_tokens_end - input_batch_start);
+        const size_t input_batch_size = math_min(context->max_batch_tokens, input_tokens_end - input_batch_start);
         const size_t input_batch_end = input_batch_start + input_batch_size;
         const size_t output_batch_size = math_sub_sat(num_output_tokens, input_tokens_end - input_batch_end);
 

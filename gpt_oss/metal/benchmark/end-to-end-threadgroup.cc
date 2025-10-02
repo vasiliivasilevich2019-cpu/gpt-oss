@@ -24,7 +24,7 @@ static void attn_qkv_tgsize(benchmark::State& state, const char* env_var_name) {
     }
 
     gptoss_model_t model_ptr = nullptr;
-    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr, /*max_batch_tokens=*/0);
+    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError(std::format("failed to load model from file {}", model_path));
         return;
@@ -33,7 +33,7 @@ static void attn_qkv_tgsize(benchmark::State& state, const char* env_var_name) {
     model->attn_qkv_threadgroup_size = static_cast<std::size_t>(state.range(0));
 
     gptoss_context_t context_ptr = nullptr;
-    status = gptoss_context_create(model.get(), /*context_lenght=*/0, &context_ptr);
+    status = gptoss_context_create(model.get(), /*context_length=*/0, /*max_batch_tokens=*/0, &context_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError("failed to create Context object");
         return;
@@ -107,7 +107,7 @@ static void attn_out_tgsize(benchmark::State& state, const char* env_var_name) {
     }
 
     gptoss_model_t model_ptr = nullptr;
-    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr, /*max_batch_tokens=*/0);
+    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError(std::format("failed to load model from file {}", model_path));
         return;
@@ -116,7 +116,7 @@ static void attn_out_tgsize(benchmark::State& state, const char* env_var_name) {
     model->attn_out_threadgroup_size = static_cast<std::size_t>(state.range(0));
 
     gptoss_context_t context_ptr = nullptr;
-    status = gptoss_context_create(model.get(), /*context_lenght=*/0, &context_ptr);
+    status = gptoss_context_create(model.get(), /*context_length=*/0, /*max_batch_tokens=*/0, &context_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError("failed to create Context object");
         return;
@@ -190,7 +190,7 @@ static void mlp_gate_tgsize(benchmark::State& state, const char* env_var_name) {
     }
 
     gptoss_model_t model_ptr = nullptr;
-    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr, /*max_batch_tokens=*/0);
+    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError(std::format("failed to load model from file {}", model_path));
         return;
@@ -199,7 +199,7 @@ static void mlp_gate_tgsize(benchmark::State& state, const char* env_var_name) {
     model->mlp_gate_threadgroup_size = static_cast<std::size_t>(state.range(0));
 
     gptoss_context_t context_ptr = nullptr;
-    status = gptoss_context_create(model.get(), /*context_lenght=*/0, &context_ptr);
+    status = gptoss_context_create(model.get(), /*context_length=*/0, /*max_batch_tokens=*/0, &context_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError("failed to create Context object");
         return;
@@ -273,7 +273,7 @@ static void mlp_swiglu_tgsize(benchmark::State& state, const char* env_var_name)
     }
 
     gptoss_model_t model_ptr = nullptr;
-    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr, /*max_batch_tokens=*/0);
+    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError(std::format("failed to load model from file {}", model_path));
         return;
@@ -282,7 +282,7 @@ static void mlp_swiglu_tgsize(benchmark::State& state, const char* env_var_name)
     model->mlp_swiglu_threadgroup_size = static_cast<std::size_t>(state.range(0));
 
     gptoss_context_t context_ptr = nullptr;
-    status = gptoss_context_create(model.get(), /*context_lenght=*/0, &context_ptr);
+    status = gptoss_context_create(model.get(), /*context_length=*/0, /*max_batch_tokens=*/0, &context_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError("failed to create Context object");
         return;
@@ -356,7 +356,7 @@ static void mlp_out_tgsize(benchmark::State& state, const char* env_var_name) {
     }
 
     gptoss_model_t model_ptr = nullptr;
-    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr, /*max_batch_tokens=*/0);
+    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError(std::format("failed to load model from file {}", model_path));
         return;
@@ -365,7 +365,7 @@ static void mlp_out_tgsize(benchmark::State& state, const char* env_var_name) {
     model->mlp_out_threadgroup_size = static_cast<std::size_t>(state.range(0));
 
     gptoss_context_t context_ptr = nullptr;
-    status = gptoss_context_create(model.get(), /*context_lenght=*/0, &context_ptr);
+    status = gptoss_context_create(model.get(), /*context_length=*/0, /*max_batch_tokens=*/0, &context_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError("failed to create Context object");
         return;
@@ -439,7 +439,7 @@ static void mlp_acc_tgsize(benchmark::State& state, const char* env_var_name) {
     }
 
     gptoss_model_t model_ptr = nullptr;
-    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr, /*max_batch_tokens=*/0);
+    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError(std::format("failed to load model from file {}", model_path));
         return;
@@ -448,7 +448,7 @@ static void mlp_acc_tgsize(benchmark::State& state, const char* env_var_name) {
     model->mlp_acc_threadgroup_size = static_cast<std::size_t>(state.range(0));
 
     gptoss_context_t context_ptr = nullptr;
-    status = gptoss_context_create(model.get(), /*context_lenght=*/0, &context_ptr);
+    status = gptoss_context_create(model.get(), /*context_length=*/0, /*max_batch_tokens=*/0, &context_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError("failed to create Context object");
         return;
@@ -517,7 +517,7 @@ static void unembedding_tgsize(benchmark::State& state, const char* env_var_name
     }
 
     gptoss_model_t model_ptr = nullptr;
-    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr, /*max_batch_tokens=*/0);
+    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError(std::format("failed to load model from file {}", model_path));
         return;
@@ -526,7 +526,7 @@ static void unembedding_tgsize(benchmark::State& state, const char* env_var_name
     model->unembedding_threadgroup_size = static_cast<std::size_t>(state.range(0));
 
     gptoss_context_t context_ptr = nullptr;
-    status = gptoss_context_create(model.get(), /*context_lenght=*/0, &context_ptr);
+    status = gptoss_context_create(model.get(), /*context_length=*/0, /*max_batch_tokens=*/0, &context_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError("failed to create Context object");
         return;

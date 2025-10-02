@@ -6,23 +6,31 @@
 
 
 static int PyGPTOSSContext_init(PyGPTOSSContext* self, PyObject* args, PyObject* kwargs) {
-    static char *kwlist[] = {"model", "context_length", NULL};
+    static char *kwlist[] = {"model", "context_length", "max_batch_tokens", NULL};
     PyObject* model = NULL;
     Py_ssize_t context_length = 0; // Default to 0 if None
+    Py_ssize_t max_batch_tokens = 0; // Default to 0 if None
 
     PyObject* model = NULL;
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|$i", kwlist,
-                                     &PyGPTOSSModel_Type, &model, &context_length)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|$ii", kwlist,
+                                     &PyGPTOSSModel_Type, &model,
+                                     &context_length, &max_batch_tokens))
+    {
         return -1;
     }
     if (context_length < 0) {
         PyErr_SetString(PyExc_ValueError, "context_length must be a positive integer");
         return -1;
     }
+    if (max_batch_tokens < 0) {
+        PyErr_SetString(PyExc_ValueError, "max_batch_tokens must be a positive integer");
+        return -1;
+    }
 
     enum gptoss_status status = gptoss_context_create(
         ((const PyGPTOSSModel*) model)->handle,
         (size_t) context_length,
+        (size_t) max_batch_tokens,
         &self->handle);
     if (status != gptoss_status_success) {
         // TODO: set exception

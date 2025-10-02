@@ -23,7 +23,7 @@ static void end2end_decode(benchmark::State& state, const char* env_var_name) {
     }
 
     gptoss_model_t model_ptr = nullptr;
-    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr, 0);
+    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError(std::format("failed to load model from file {}", model_path));
         return;
@@ -31,7 +31,7 @@ static void end2end_decode(benchmark::State& state, const char* env_var_name) {
     std::unique_ptr<std::remove_pointer_t<gptoss_model_t>, decltype(&gptoss_model_release)> model(model_ptr, gptoss_model_release);
 
     gptoss_context_t context_ptr = nullptr;
-    status = gptoss_context_create(model.get(), /*context_lenght=*/0, &context_ptr);
+    status = gptoss_context_create(model.get(), /*context_length=*/0, /*max_batch_tokens=*/0, &context_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError("failed to create Context object");
         return;
@@ -125,8 +125,7 @@ static void end2end_prefill(benchmark::State& state,
     }
 
     gptoss_model_t model_ptr = nullptr;
-    gptoss_status status =
-        gptoss_model_create_from_file(model_path, &model_ptr, 1024);
+    gptoss_status status = gptoss_model_create_from_file(model_path, &model_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError(
             std::format("failed to load model from file {}", model_path));
@@ -147,8 +146,10 @@ static void end2end_prefill(benchmark::State& state,
         tokenizer(tokenizer_ptr, gptoss_tokenizer_release);
 
     gptoss_context_t context_ptr = nullptr;
-    status =
-        gptoss_context_create(model.get(), /*context_lenght=*/0, &context_ptr);
+    status = gptoss_context_create(model.get(),
+                                   /*context_lenght=*/0,
+                                   /*max_batch_tokens=*/1024,
+                                   &context_ptr);
     if (status != gptoss_status_success) {
         state.SkipWithError("failed to create Context object");
         return;
