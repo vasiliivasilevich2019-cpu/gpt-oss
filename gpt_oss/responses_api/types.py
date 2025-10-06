@@ -43,6 +43,7 @@ class ReasoningItem(BaseModel):
 
 
 class Item(BaseModel):
+    id: Optional[str] = None
     type: Optional[Literal["message"]] = "message"
     role: Literal["user", "assistant", "system"]
     content: Union[list[TextContentItem], str]
