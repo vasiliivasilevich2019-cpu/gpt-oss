@@ -67,11 +67,24 @@ async def main():
             ],
         },
     )
+
+    # Create MCP server for reference system prompt operations
+    reference_system_prompt_mcp_server = MCPServerStdio(
+        name="Reference system prompt MCP Server, via uv",
+        params={
+            "command": "uv",
+            "args": [
+                "run",
+                "reference-system-prompt.py",
+            ],
+        },
+    )
     
     # Connect to MCP servers
     await filesystem_mcp_server.connect()
     await python_mcp_server.connect()
     await browser_mcp_server.connect()
+    await reference_system_prompt_mcp_server.connect()
 
     # Configure agents SDK
     set_tracing_disabled(True)
@@ -87,6 +100,7 @@ async def main():
             filesystem_mcp_server,
             python_mcp_server,
             browser_mcp_server,
+            reference_system_prompt_mcp_server,
         ],
     )
 
