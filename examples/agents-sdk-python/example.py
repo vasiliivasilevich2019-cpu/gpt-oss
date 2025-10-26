@@ -51,7 +51,7 @@ async def main():
             "command": "uv",
             "args": [
                 "run",
-                "../../gpt-oss-mcp-server/python_server.py",
+                "python_server.py",
             ],
         },
     )
@@ -63,7 +63,7 @@ async def main():
             "command": "uv",
             "args": [
                 "run",
-                "../../gpt-oss-mcp-server/browser_server.py",
+                "browser_server.py",
             ],
         },
     )
