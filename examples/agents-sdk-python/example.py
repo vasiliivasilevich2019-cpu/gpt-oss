@@ -25,14 +25,14 @@ async def main():
     # Set up OpenAI client for local server (e.g., Ollama)
     openai_client = AsyncOpenAI(
         api_key="local",
-        base_url="http://localhost:11434/v1",
+        base_url="http://localhost:8000/v1",
     )
 
     # Get current working directory
     samples_dir = str(Path.cwd())
 
     # Create MCP server for filesystem operations
-    mcp_server = MCPServerStdio(
+    filesystem_mcp_server = MCPServerStdio(
         name="Filesystem MCP Server, via npx",
         params={
             "command": "npx",
@@ -44,26 +44,50 @@ async def main():
         },
     )
 
-    # Connect to MCP server
-    await mcp_server.connect()
+    # Create MCP server for python operations
+    python_mcp_server = MCPServerStdio(
+        name="Python MCP Server, via uv",
+        params={
+            "command": "uv",
+            "args": [
+                "run",
+                "../../gpt-oss-mcp-server/python_server.py",
+            ],
+        },
+    )
+
+    # Create MCP server for browser operations
+    browser_mcp_server = MCPServerStdio(
+        name="Browser MCP Server, via uv",
+        params={
+            "command": "uv",
+            "args": [
+                "run",
+                "../../gpt-oss-mcp-server/browser_server.py",
+            ],
+        },
+    )
+    
+    # Connect to MCP servers
+    await filesystem_mcp_server.connect()
+    await python_mcp_server.connect()
+    await browser_mcp_server.connect()
 
     # Configure agents SDK
     set_tracing_disabled(True)
     set_default_openai_client(openai_client)
     set_default_openai_api("chat_completions")
 
-    # Define weather tool
-    @function_tool
-    async def get_weather(location: str) -> str:
-        return f"The weather in {location} is sunny."
-
     # Create agent
     agent = Agent(
         name="My Agent",
         instructions="You are a helpful assistant.",
-        tools=[get_weather],
-        model="gpt-oss:20b-test",
-        mcp_servers=[mcp_server],
+        model="gpt-oss",
+        mcp_servers=[
+            filesystem_mcp_server,
+            python_mcp_server,
+            browser_mcp_server,
+        ],
     )
 
     # Get user input
