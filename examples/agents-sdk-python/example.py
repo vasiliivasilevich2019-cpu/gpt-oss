@@ -1,6 +1,4 @@
 import asyncio
-from pathlib import Path
-import shutil
 
 from openai import AsyncOpenAI
 from agents import (
@@ -12,7 +10,6 @@ from agents import (
     set_tracing_disabled,
     function_tool,
 )
-from agents.mcp import MCPServerStdio
 
 
 async def prompt_user(question: str) -> str:
@@ -28,64 +25,6 @@ async def main():
         base_url="http://localhost:8000/v1",
     )
 
-    # Get current working directory
-    samples_dir = str(Path.cwd())
-
-    # Create MCP server for filesystem operations
-    filesystem_mcp_server = MCPServerStdio(
-        name="Filesystem MCP Server, via npx",
-        params={
-            "command": "npx",
-            "args": [
-                "-y",
-                "@modelcontextprotocol/server-filesystem",
-                samples_dir,
-            ],
-        },
-    )
-
-    # Create MCP server for python operations
-    python_mcp_server = MCPServerStdio(
-        name="Python MCP Server, via uv",
-        params={
-            "command": "uv",
-            "args": [
-                "run",
-                "python_server.py",
-            ],
-        },
-    )
-
-    # Create MCP server for browser operations
-    browser_mcp_server = MCPServerStdio(
-        name="Browser MCP Server, via uv",
-        params={
-            "command": "uv",
-            "args": [
-                "run",
-                "browser_server.py",
-            ],
-        },
-    )
-
-    # Create MCP server for reference system prompt operations
-    reference_system_prompt_mcp_server = MCPServerStdio(
-        name="Reference system prompt MCP Server, via uv",
-        params={
-            "command": "uv",
-            "args": [
-                "run",
-                "reference-system-prompt.py",
-            ],
-        },
-    )
-    
-    # Connect to MCP servers
-    await filesystem_mcp_server.connect()
-    await python_mcp_server.connect()
-    await browser_mcp_server.connect()
-    await reference_system_prompt_mcp_server.connect()
-
     # Configure agents SDK
     set_tracing_disabled(True)
     set_default_openai_client(openai_client)
@@ -96,12 +35,7 @@ async def main():
         name="My Agent",
         instructions="You are a helpful assistant.",
         model="gpt-oss",
-        mcp_servers=[
-            filesystem_mcp_server,
-            python_mcp_server,
-            browser_mcp_server,
-            reference_system_prompt_mcp_server,
-        ],
+        tools=[]
     )
 
     # Get user input
@@ -133,8 +67,4 @@ async def main():
 
 if __name__ == "__main__":
 
-    if not shutil.which("npx"):
-        raise RuntimeError(
-            "npx is not installed. Please install it with `npm install -g npx`."
-        )
     asyncio.run(main())
