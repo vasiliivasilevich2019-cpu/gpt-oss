@@ -1,4 +1,5 @@
 import asyncio
+from gpt_oss.tools.python_docker.docker_tool import PythonTool
 
 from openai import AsyncOpenAI
 from agents import (
@@ -30,12 +31,14 @@ async def main():
     set_default_openai_client(openai_client)
     set_default_openai_api("chat_completions")
 
+    python_tool = PythonTool()
+
     # Create agent
     agent = Agent(
         name="My Agent",
         instructions="You are a helpful assistant.",
         model="gpt-oss",
-        tools=[]
+        tools=[python_tool,],
     )
 
     # Get user input
